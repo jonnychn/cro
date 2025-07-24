@@ -4,13 +4,51 @@
 <meta charset="UTF-8">
 <title>CRO Calculator</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 20px; }
-  .slider-container { margin-bottom: 20px; }
-  label { display: block; font-weight: bold; margin-bottom: 5px; }
-  input[type=range] { width: 100%; }
-  #results { margin-top: 30px; }
-  #resultsTable { margin-top: 30px; border-collapse: collapse; }
-  #resultsTable th, #resultsTable td { border: 1px solid #ccc; padding: 4px 8px; }
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background: #f2f2f2;
+    color: #000;
+  }
+  .slider-container {
+    margin-bottom: 20px;
+    border: 2px solid #000;
+    padding: 12px;
+    background: #fff;
+    box-shadow: 4px 4px 0 #000;
+  }
+  label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  input[type=range],
+  input[type=number] {
+    width: 100%;
+  }
+  #results {
+    margin-top: 30px;
+    border: 2px solid #000;
+    padding: 12px;
+    background: #fff;
+    box-shadow: 4px 4px 0 #000;
+  }
+  #resultsTable {
+    margin-top: 30px;
+    border-collapse: collapse;
+    border: 2px solid #000;
+    background: #fff;
+    box-shadow: 4px 4px 0 #000;
+  }
+  #resultsTable th, #resultsTable td {
+    border: 1px solid #000;
+    padding: 4px 8px;
+  }
+  #metricsChart {
+    background: #fff;
+    border: 2px solid #000;
+    box-shadow: 4px 4px 0 #000;
+  }
 </style>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -20,22 +58,27 @@
 <div class="slider-container">
   <label for="visitors">Visitors: <span id="visitorsVal">1000</span></label>
   <input type="range" id="visitors" min="0" max="10000" value="1000" step="10">
+  <input type="number" id="visitorsNum" min="0" max="10000" value="1000" step="10">
 </div>
 <div class="slider-container">
   <label for="conversion">Conversion Rate (%): <span id="conversionVal">5</span></label>
   <input type="range" id="conversion" min="0" max="100" value="5">
+  <input type="number" id="conversionNum" min="0" max="100" value="5">
 </div>
 <div class="slider-container">
   <label for="price">Monthly Price ($): <span id="priceVal">5</span></label>
   <input type="range" id="price" min="0" max="100" value="5" step="1">
+  <input type="number" id="priceNum" min="0" max="100" value="5" step="1">
 </div>
 <div class="slider-container">
   <label for="retention">Retention (months): <span id="retentionVal">6</span></label>
   <input type="range" id="retention" min="1" max="24" value="6" step="1">
+  <input type="number" id="retentionNum" min="1" max="24" value="6" step="1">
 </div>
 <div class="slider-container">
   <label for="cpc">Cost per Visitor ($): <span id="cpcVal">0.50</span></label>
   <input type="range" id="cpc" min="0" max="10" value="0.50" step="0.01">
+  <input type="number" id="cpcNum" min="0" max="10" value="0.50" step="0.01">
 </div>
 <div id="results">
   <p>Paying Customers: <span id="customers">50</span></p>
@@ -55,7 +98,7 @@
   </tbody>
 </table>
 
-<canvas id="metricsChart" width="600" height="300"></canvas>
+<canvas id="metricsChart" width="500" height="250"></canvas>
 <script>
 let chart;
 function update() {
@@ -64,6 +107,12 @@ function update() {
   const price = parseFloat($('#price').val());
   const retention = parseInt($('#retention').val());
   const cpc = parseFloat($('#cpc').val());
+
+  $('#visitorsNum').val(visitors);
+  $('#conversionNum').val($('#conversion').val());
+  $('#priceNum').val(price);
+  $('#retentionNum').val(retention);
+  $('#cpcNum').val(cpc);
 
   $('#visitorsVal').text(visitors);
   $('#conversionVal').text((conversion * 100).toFixed(1));
@@ -123,15 +172,45 @@ $(function() {
     data: {
       labels: [],
       datasets: [
-        { label: 'MRR', borderColor: 'blue', fill: false, data: [] },
-        { label: 'Acquisition Cost', borderColor: 'green', fill: false, data: [] },
-        { label: 'Payback Period', borderColor: 'red', fill: false, data: [] }
+        { label: 'MRR', borderColor: 'blue', fill: false, data: [], yAxisID: 'y', pointRadius: 3, pointHoverRadius: 5 },
+        { label: 'Acquisition Cost', borderColor: 'green', fill: false, data: [], yAxisID: 'y', pointRadius: 3, pointHoverRadius: 5 },
+        { label: 'Payback Period', borderColor: 'red', fill: false, data: [], yAxisID: 'y2', pointRadius: 3, pointHoverRadius: 5 }
       ]
     },
-    options: { scales: { y: { beginAtZero: true } } }
+    options: {
+      interaction: { mode: 'index', intersect: false },
+      hover: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: true },
+        tooltip: { mode: 'index', intersect: false }
+      },
+      scales: {
+        x: { title: { display: true, text: 'Visitors' } },
+        y: {
+          beginAtZero: true,
+          position: 'left',
+          title: { display: true, text: 'Revenue / Cost ($)' }
+        },
+        y2: {
+          beginAtZero: true,
+          position: 'right',
+          grid: { drawOnChartArea: false },
+          title: { display: true, text: 'Payback Period (months)' }
+        }
+      }
+    }
   });
 
-  $('input[type=range]').on('input', update);
+  $('input[type=range]').on('input', function() {
+    update();
+  });
+
+  $('input[type=number]').on('input', function() {
+    const id = $(this).attr('id').replace('Num', '');
+    $('#' + id).val($(this).val());
+    update();
+  });
+
   update();
 });
 </script>
