@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CRO Calculator</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; }
+  .slider-container { margin-bottom: 20px; }
+  label { display: block; font-weight: bold; margin-bottom: 5px; }
+  input[type=range] { width: 100%; }
+  #results { margin-top: 30px; }
+</style>
+</head>
+<body>
+<h1>CRO Calculator</h1>
+<div class="slider-container">
+  <label for="visitors">Visitors: <span id="visitorsVal">1000</span></label>
+  <input type="range" id="visitors" min="0" max="10000" value="1000" step="10">
+</div>
+<div class="slider-container">
+  <label for="conversion">Conversion Rate (%): <span id="conversionVal">5</span></label>
+  <input type="range" id="conversion" min="0" max="100" value="5">
+</div>
+<div class="slider-container">
+  <label for="price">Monthly Price ($): <span id="priceVal">5</span></label>
+  <input type="range" id="price" min="0" max="100" value="5" step="1">
+</div>
+<div class="slider-container">
+  <label for="retention">Retention (months): <span id="retentionVal">6</span></label>
+  <input type="range" id="retention" min="1" max="24" value="6" step="1">
+</div>
+<div class="slider-container">
+  <label for="cpc">Cost per Visitor ($): <span id="cpcVal">0.50</span></label>
+  <input type="range" id="cpc" min="0" max="10" value="0.50" step="0.01">
+</div>
+<div id="results">
+  <p>Paying Customers: <span id="customers">50</span></p>
+  <p>Monthly Recurring Revenue (MRR): $<span id="mrr">250.00</span></p>
+  <p>Annual Recurring Revenue (ARR): $<span id="arr">3000.00</span></p>
+  <p>Payback Period: <span id="payback">2.00</span> months</p>
+</div>
+<script>
+function update() {
+  const visitors = parseInt(document.getElementById('visitors').value);
+  const conversion = parseFloat(document.getElementById('conversion').value) / 100;
+  const price = parseFloat(document.getElementById('price').value);
+  const retention = parseInt(document.getElementById('retention').value);
+  const cpc = parseFloat(document.getElementById('cpc').value);
+
+  document.getElementById('visitorsVal').textContent = visitors;
+  document.getElementById('conversionVal').textContent = (conversion*100).toFixed(1);
+  document.getElementById('priceVal').textContent = price.toFixed(2);
+  document.getElementById('retentionVal').textContent = retention;
+  document.getElementById('cpcVal').textContent = cpc.toFixed(2);
+
+  const customers = visitors * conversion;
+  const mrr = customers * price;
+  const arr = mrr * 12;
+  const acquisitionCost = visitors * cpc;
+  const payback = mrr > 0 ? acquisitionCost / mrr : 0;
+
+  document.getElementById('customers').textContent = customers.toFixed(0);
+  document.getElementById('mrr').textContent = mrr.toFixed(2);
+  document.getElementById('arr').textContent = arr.toFixed(2);
+  document.getElementById('payback').textContent = payback.toFixed(2);
+}
+
+document.querySelectorAll('input[type=range]').forEach(e => {
+  e.addEventListener('input', update);
+});
+
+update();
+</script>
+</body>
+</html>
