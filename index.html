@@ -83,6 +83,15 @@
     cursor: pointer;
     box-shadow: 4px 4px 0 #222;
   }
+  #baselineBtn {
+    margin-top: 10px;
+    padding: 8px 16px;
+    border: 2px solid #222;
+    background: #2a3d66;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 #222;
+  }
 </style>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
@@ -125,6 +134,7 @@
   <input type="range" id="margin" min="0" max="100" value="50">
   <input type="number" id="marginNum" min="0" max="100" value="50">
 </div>
+<button id="baselineBtn">Ramen Profitability</button>
 </div> <!-- end inputs -->
 <div id="metrics">
 <table id="monthlyTable" class="resultsTable">
@@ -249,6 +259,17 @@ function exportCSV() {
   URL.revokeObjectURL(url);
 }
 
+function ramenBaseline() {
+  $('#adToggle').prop('checked', false);
+  $('#spend').val(1000);
+  $('#visitors').val(1500);
+  $('#conversion').val(10);
+  $('#price').val(10);
+  $('#retention').val(6);
+  $('#margin').val(67);
+  update();
+}
+
 $(function() {
   $('input[type=range]').on('input', function() {
     update();
@@ -266,6 +287,10 @@ $(function() {
 
   $('#exportCsv').on('click', function() {
     exportCSV();
+  });
+
+  $('#baselineBtn').on('click', function() {
+    ramenBaseline();
   });
 
   update();
