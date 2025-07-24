@@ -17,9 +17,30 @@
     margin-bottom: 10px;
     border: 2px solid #222;
     padding: 8px;
-    background: #fff;
     box-shadow: 4px 4px 0 #222;
   }
+  .description {
+    margin: 10px 0;
+    border: 2px solid #222;
+    padding: 8px;
+    background: #fff;
+    box-shadow: 4px 4px 0 #222;
+    max-width: 600px;
+  }
+  #calculator {
+    display: flex;
+    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  #inputs, #outputs {
+    flex: 1;
+  }
+  .color1 { background: #ffadad; }
+  .color2 { background: #ffd6a5; }
+  .color3 { background: #fdffb6; }
+  .color4 { background: #caffbf; }
+  .color5 { background: #9bf6ff; }
   label {
     display: block;
     font-weight: bold;
@@ -28,13 +49,6 @@
   input[type=range],
   input[type=number] {
     width: 100%;
-  }
-  #results {
-    margin-top: 20px;
-    border: 2px solid #222;
-    padding: 8px;
-    background: #fff;
-    box-shadow: 4px 4px 0 #222;
   }
   #resultsTable {
     margin-top: 20px;
@@ -54,55 +68,49 @@
     background: #fff;
     box-shadow: 4px 4px 0 #222;
   }
-  #calculator {
-    max-width: 600px;
-    margin: 0 auto;
-  }
 </style>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
 <h1>CRO Calculator</h1>
+<div class="description">Adjust the sliders to explore different revenue scenarios.</div>
 <div id="calculator">
-<div class="slider-container">
+<div id="inputs">
+<div class="slider-container color1">
   <label for="visitors">Visitors: <span id="visitorsVal">1000</span></label>
   <input type="range" id="visitors" min="0" max="10000" value="1000" step="10">
   <input type="number" id="visitorsNum" min="0" max="10000" value="1000" step="10">
 </div>
-<div class="slider-container">
+<div class="slider-container color2">
   <label for="conversion">Conversion Rate (%): <span id="conversionVal">5</span></label>
   <input type="range" id="conversion" min="0" max="100" value="5">
   <input type="number" id="conversionNum" min="0" max="100" value="5">
 </div>
-<div class="slider-container">
+<div class="slider-container color3">
   <label for="price">Monthly Price ($): <span id="priceVal">5</span></label>
   <input type="range" id="price" min="0" max="100" value="5" step="1">
   <input type="number" id="priceNum" min="0" max="100" value="5" step="1">
 </div>
-<div class="slider-container">
+<div class="slider-container color4">
   <label for="retention">Retention (months): <span id="retentionVal">6</span></label>
   <input type="range" id="retention" min="1" max="24" value="6" step="1">
   <input type="number" id="retentionNum" min="1" max="24" value="6" step="1">
 </div>
-<div class="slider-container">
+<div class="slider-container color5">
   <label for="cpc">Cost per Visitor ($): <span id="cpcVal">0.50</span></label>
   <input type="range" id="cpc" min="0" max="10" value="0.50" step="0.01">
   <input type="number" id="cpcNum" min="0" max="10" value="0.50" step="0.01">
 </div>
-<div id="results">
-  <p>Paying Customers: <span id="customers">50</span></p>
-  <p>Monthly Recurring Revenue (MRR): $<span id="mrr">250.00</span></p>
-  <p>Annual Recurring Revenue (ARR): $<span id="arr">3000.00</span></p>
-  <p>Payback Period: <span id="payback">2.00</span> months</p>
-</div>
+</div> <!-- end inputs -->
+<div id="outputs">
 <table id="resultsTable">
   <thead>
     <tr><th>Metric</th><th>Value</th></tr>
   </thead>
   <tbody>
     <tr><td>Paying Customers</td><td id="customersTab">50</td></tr>
-    <tr><td>MRR</td><td id="mrrTab">$250.00</td></tr>
-    <tr><td>ARR</td><td id="arrTab">$3000.00</td></tr>
+    <tr><td>Monthly Recurring Revenue (MRR)</td><td id="mrrTab">$250.00</td></tr>
+    <tr><td>Annual Recurring Revenue (ARR)</td><td id="arrTab">$3000.00</td></tr>
     <tr><td>Payback Period (months)</td><td id="paybackTab">2.00</td></tr>
   </tbody>
 </table>
@@ -110,12 +118,13 @@
 <div class="insights">
   <h2>What the numbers mean</h2>
   <p><strong>Paying Customers:</strong> expected subscribers based on your traffic and conversion rate.</p>
-  <p><strong>MRR:</strong> predictable monthly revenue from those customers.</p>
-  <p><strong>ARR:</strong> yearly subscription revenue calculated from MRR.</p>
+  <p><strong>Monthly Recurring Revenue (MRR):</strong> predictable monthly revenue from those customers.</p>
+  <p><strong>Annual Recurring Revenue (ARR):</strong> yearly subscription revenue calculated from MRR.</p>
   <p><strong>Payback Period:</strong> months needed to recover your acquisition costs.</p>
   </div>
 
 </div>
+</div> <!-- end calculator -->
 
 <script>
 function update() {
@@ -143,10 +152,6 @@ function update() {
   const acquisitionCost = visitors * cpc;
   const payback = mrr > 0 ? acquisitionCost / mrr : 0;
 
-  $('#customers').text(customers.toFixed(0));
-  $('#mrr').text(mrr.toFixed(2));
-  $('#arr').text(arr.toFixed(2));
-  $('#payback').text(payback.toFixed(2));
 
   $('#customersTab').text(customers.toFixed(0));
   $('#mrrTab').text(`$${mrr.toFixed(2)}`);
