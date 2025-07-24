@@ -55,14 +55,14 @@
   input[type=number] {
     width: 100%;
   }
-  #resultsTable {
+  .resultsTable {
     margin-top: 20px;
     border-collapse: collapse;
     border: 2px solid #222;
     background: #fff;
     box-shadow: 4px 4px 0 #222;
   }
-  #resultsTable th, #resultsTable td {
+  .resultsTable th, .resultsTable td {
     border: 1px solid #222;
     padding: 4px 8px;
   }
@@ -82,18 +82,18 @@
 <div id="calculator">
 <div id="inputs">
 <div class="slider-container color0">
-  <label for="adToggle">No Pay Advertising</label>
+  <label for="adToggle">No Paid Advertising</label>
   <input type="checkbox" id="adToggle" checked>
 </div>
 <div id="spendContainer" class="slider-container color1" style="display:none;">
   <label for="spend">Advertising Spend ($): <span id="spendVal">500</span></label>
-  <input type="range" id="spend" min="0" max="10000" value="500" step="1000">
-  <input type="number" id="spendNum" min="0" max="10000" value="500" step="1000">
+  <input type="range" id="spend" min="0" max="10000" value="500" step="250">
+  <input type="number" id="spendNum" min="0" max="10000" value="500" step="250">
 </div>
 <div class="slider-container color2">
   <label for="visitors">Visitors (Clicks): <span id="visitorsVal">1000</span></label>
-  <input type="range" id="visitors" min="0" max="10000" value="1000" step="500">
-  <input type="number" id="visitorsNum" min="0" max="10000" value="1000" step="500">
+  <input type="range" id="visitors" min="0" max="10000" value="1000" step="250">
+  <input type="number" id="visitorsNum" min="0" max="10000" value="1000" step="250">
 </div>
 <div class="slider-container color3">
   <label for="conversion">Conversion Rate (%): <span id="conversionVal">5</span></label>
@@ -117,38 +117,47 @@
 </div>
 </div> <!-- end inputs -->
 <div id="metrics">
-<table id="resultsTable">
+<table id="monthlyTable" class="resultsTable">
   <thead>
-    <tr><th>Metric</th><th>Value</th></tr>
+    <tr><th colspan="2">Monthly Metrics</th></tr>
   </thead>
   <tbody>
     <tr><td>Visitors</td><td id="visitorsTab">1000</td></tr>
     <tr><td>Paying Customers</td><td id="customersTab">50</td></tr>
     <tr><td>Monthly Recurring Revenue (MRR)</td><td id="mrrTab">$250.00</td></tr>
-    <tr><td>Annual Recurring Revenue (ARR)</td><td id="arrTab">$3000.00</td></tr>
-    <tr><td>Advertising Spend (Monthly)</td><td id="spendTab">$500.00</td></tr>
-    <tr><td>Advertising Spend (Annual)</td><td id="annualSpendTab">$6000.00</td></tr>
+    <tr><td>Advertising Spend</td><td id="spendTab">$500.00</td></tr>
     <tr><td>Cost Per Click</td><td id="cpcTab">$0.50</td></tr>
     <tr><td>Payback Period (months)</td><td id="paybackTab">2</td></tr>
-    <tr><td>Profit (Monthly)</td><td id="profitTab">$0.00</td></tr>
-    <tr><td>Profit (Annual)</td><td id="annualProfitTab">$0.00</td></tr>
+    <tr><td>Profit</td><td id="profitTab">$0.00</td></tr>
   </tbody>
 </table>
+
+<table id="annualTable" class="resultsTable">
+  <thead>
+    <tr><th colspan="2">Annual Metrics</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Annual Recurring Revenue (ARR)</td><td id="arrTab">$3000.00</td></tr>
+    <tr><td>Advertising Spend</td><td id="annualSpendTab">$6000.00</td></tr>
+    <tr><td>Profit</td><td id="annualProfitTab">$0.00</td></tr>
+  </tbody>
+</table>
+<button id="exportCsv">Export CSV</button>
 </div>
 
 <div id="insights" class="insights">
   <h2>What the numbers mean</h2>
   <p><strong>Visitors:</strong> number of people coming to your page.</p>
-  <p><strong>Paying Customers:</strong> expected subscribers based on your traffic and conversion rate.</p>
-  <p><strong>Monthly Recurring Revenue (MRR):</strong> predictable monthly revenue from those customers.</p>
-  <p><strong>Annual Recurring Revenue (ARR):</strong> yearly subscription revenue calculated from MRR.</p>
+  <p><strong>Paying Customers:</strong> expected subscribers based on your traffic and conversion rate. <em>Formula: visitors × conversion rate</em></p>
+  <p><strong>Monthly Recurring Revenue (MRR):</strong> predictable monthly revenue from those customers. <em>Formula: paying customers × price</em></p>
+  <p><strong>Annual Recurring Revenue (ARR):</strong> yearly subscription revenue calculated from MRR. <em>Formula: MRR × 12</em></p>
   <p><strong>Advertising Spend (Monthly):</strong> what you budget for ads each month.</p>
-  <p><strong>Advertising Spend (Annual):</strong> yearly ad spend assuming the monthly budget stays the same.</p>
-  <p><strong>Cost Per Click:</strong> advertising spend divided by visitors.</p>
-  <p><strong>Payback Period:</strong> months needed to recover your advertising spend.</p>
+  <p><strong>Advertising Spend (Annual):</strong> yearly ad spend assuming the monthly budget stays the same. <em>Formula: monthly spend × 12</em></p>
+  <p><strong>Cost Per Click:</strong> advertising spend divided by visitors. <em>Formula: advertising spend / visitors</em></p>
+  <p><strong>Payback Period:</strong> months needed to recover your advertising spend. <em>Formula: advertising spend / MRR</em></p>
   <p><strong>Profit Margin:</strong> percent of revenue kept after non-advertising costs.</p>
-  <p><strong>Profit (Monthly):</strong> revenue remaining each month after ad spend and your chosen margin.</p>
-  <p><strong>Profit (Annual):</strong> yearly profit if monthly results continue.</p>
+  <p><strong>Profit (Monthly):</strong> revenue remaining each month after ad spend and your chosen margin. <em>Formula: (MRR × margin%) - advertising spend</em></p>
+  <p><strong>Profit (Annual):</strong> yearly profit if monthly results continue. <em>Formula: monthly profit × 12</em></p>
   </div>
 
 </div>
@@ -206,6 +215,30 @@ function update() {
   $('#annualProfitTab').text(`$${profitAnnual.toFixed(2)}`);
 }
 
+function exportCSV() {
+  const rows = [
+    ['Metric', 'Value'],
+    ['Visitors', $('#visitorsTab').text()],
+    ['Paying Customers', $('#customersTab').text()],
+    ['Monthly Recurring Revenue (MRR)', $('#mrrTab').text()],
+    ['Advertising Spend (Monthly)', $('#spendTab').text()],
+    ['Cost Per Click', $('#cpcTab').text()],
+    ['Payback Period (months)', $('#paybackTab').text()],
+    ['Profit (Monthly)', $('#profitTab').text()],
+    ['Annual Recurring Revenue (ARR)', $('#arrTab').text()],
+    ['Advertising Spend (Annual)', $('#annualSpendTab').text()],
+    ['Profit (Annual)', $('#annualProfitTab').text()]
+  ];
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'metrics.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 $(function() {
   $('input[type=range]').on('input', function() {
     update();
@@ -219,6 +252,10 @@ $(function() {
     const id = $(this).attr('id').replace('Num', '');
     $('#' + id).val($(this).val());
     update();
+  });
+
+  $('#exportCsv').on('click', function() {
+    exportCSV();
   });
 
   update();
