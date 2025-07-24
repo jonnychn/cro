@@ -32,13 +32,14 @@
   #calculator {
     display: flex;
     gap: 20px;
-    max-width: 800px;
+    max-width: 1200px;
     margin: 0 auto;
     text-align: center;
   }
-  #inputs, #outputs {
+  #inputs, #metrics, #insights {
     flex: 1;
   }
+  .color0 { background: #e0e0e0; }
   .color1 { background: #ffadad; }
   .color2 { background: #ffd6a5; }
   .color3 { background: #fdffb6; }
@@ -80,15 +81,19 @@
 <div class="description">Adjust the sliders to explore different revenue scenarios.</div>
 <div id="calculator">
 <div id="inputs">
-<div class="slider-container color1">
+<div class="slider-container color0">
+  <label for="adToggle">No Pay Advertising</label>
+  <input type="checkbox" id="adToggle" checked>
+</div>
+<div id="spendContainer" class="slider-container color1" style="display:none;">
   <label for="spend">Advertising Spend ($): <span id="spendVal">500</span></label>
-  <input type="range" id="spend" min="0" max="10000" value="500" step="10">
-  <input type="number" id="spendNum" min="0" max="10000" value="500" step="10">
+  <input type="range" id="spend" min="0" max="10000" value="500" step="1000">
+  <input type="number" id="spendNum" min="0" max="10000" value="500" step="1000">
 </div>
 <div class="slider-container color2">
   <label for="visitors">Visitors (Clicks): <span id="visitorsVal">1000</span></label>
-  <input type="range" id="visitors" min="0" max="10000" value="1000" step="1">
-  <input type="number" id="visitorsNum" min="0" max="10000" value="1000" step="1">
+  <input type="range" id="visitors" min="0" max="10000" value="1000" step="500">
+  <input type="number" id="visitorsNum" min="0" max="10000" value="1000" step="500">
 </div>
 <div class="slider-container color3">
   <label for="conversion">Conversion Rate (%): <span id="conversionVal">5</span></label>
@@ -111,30 +116,35 @@
   <input type="number" id="marginNum" min="0" max="100" value="50">
 </div>
 </div> <!-- end inputs -->
-<div id="outputs">
+<div id="metrics">
 <table id="resultsTable">
   <thead>
     <tr><th>Metric</th><th>Value</th></tr>
   </thead>
   <tbody>
+    <tr><td>Visitors</td><td id="visitorsTab">1000</td></tr>
     <tr><td>Paying Customers</td><td id="customersTab">50</td></tr>
     <tr><td>Monthly Recurring Revenue (MRR)</td><td id="mrrTab">$250.00</td></tr>
     <tr><td>Annual Recurring Revenue (ARR)</td><td id="arrTab">$3000.00</td></tr>
     <tr><td>Advertising Spend (Monthly)</td><td id="spendTab">$500.00</td></tr>
     <tr><td>Advertising Spend (Annual)</td><td id="annualSpendTab">$6000.00</td></tr>
-    <tr><td>Payback Period (months)</td><td id="paybackTab">2.00</td></tr>
+    <tr><td>Cost Per Click</td><td id="cpcTab">$0.50</td></tr>
+    <tr><td>Payback Period (months)</td><td id="paybackTab">2</td></tr>
     <tr><td>Profit (Monthly)</td><td id="profitTab">$0.00</td></tr>
     <tr><td>Profit (Annual)</td><td id="annualProfitTab">$0.00</td></tr>
   </tbody>
 </table>
+</div>
 
-<div class="insights">
+<div id="insights" class="insights">
   <h2>What the numbers mean</h2>
+  <p><strong>Visitors:</strong> number of people coming to your page.</p>
   <p><strong>Paying Customers:</strong> expected subscribers based on your traffic and conversion rate.</p>
   <p><strong>Monthly Recurring Revenue (MRR):</strong> predictable monthly revenue from those customers.</p>
   <p><strong>Annual Recurring Revenue (ARR):</strong> yearly subscription revenue calculated from MRR.</p>
   <p><strong>Advertising Spend (Monthly):</strong> what you budget for ads each month.</p>
   <p><strong>Advertising Spend (Annual):</strong> yearly ad spend assuming the monthly budget stays the same.</p>
+  <p><strong>Cost Per Click:</strong> advertising spend divided by visitors.</p>
   <p><strong>Payback Period:</strong> months needed to recover your advertising spend.</p>
   <p><strong>Profit Margin:</strong> percent of revenue kept after non-advertising costs.</p>
   <p><strong>Profit (Monthly):</strong> revenue remaining each month after ad spend and your chosen margin.</p>
@@ -146,13 +156,19 @@
 
 <script>
 function update() {
-  const spend = parseFloat($('#spend').val());
+  const noPay = $('#adToggle').is(':checked');
+  const spend = noPay ? 0 : parseFloat($('#spend').val());
   const visitors = parseInt($('#visitors').val());
   const conversion = parseFloat($('#conversion').val()) / 100;
   const price = parseFloat($('#price').val());
   const retention = parseInt($('#retention').val());
   const margin = parseFloat($('#margin').val());
 
+  if(noPay) {
+    $('#spendContainer').hide();
+  } else {
+    $('#spendContainer').show();
+  }
   $('#spendNum').val(spend);
   $('#visitorsNum').val(visitors);
   $('#conversionNum').val($('#conversion').val());
@@ -175,20 +191,27 @@ function update() {
   const profitMonthly = mrr * (margin / 100) - adSpendMonthly;
   const profitAnnual = profitMonthly * 12;
   const payback = mrr > 0 ? adSpendMonthly / mrr : 0;
+  const cpc = visitors > 0 ? adSpendMonthly / visitors : 0;
 
 
+  $('#visitorsTab').text(visitors);
   $('#customersTab').text(customers.toFixed(0));
   $('#mrrTab').text(`$${mrr.toFixed(2)}`);
   $('#arrTab').text(`$${arr.toFixed(2)}`);
   $('#spendTab').text(`$${adSpendMonthly.toFixed(2)}`);
   $('#annualSpendTab').text(`$${adSpendAnnual.toFixed(2)}`);
-  $('#paybackTab').text(payback.toFixed(2));
+  $('#cpcTab').text(`$${cpc.toFixed(2)}`);
+  $('#paybackTab').text(Math.round(payback));
   $('#profitTab').text(`$${profitMonthly.toFixed(2)}`);
   $('#annualProfitTab').text(`$${profitAnnual.toFixed(2)}`);
 }
 
 $(function() {
   $('input[type=range]').on('input', function() {
+    update();
+  });
+
+  $('#adToggle').on('change', function() {
     update();
   });
 
