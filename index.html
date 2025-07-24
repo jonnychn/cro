@@ -81,29 +81,29 @@
 <div id="calculator">
 <div id="inputs">
 <div class="slider-container color1">
-  <label for="visitors">Visitors: <span id="visitorsVal">1000</span></label>
+  <label for="spend">Advertising Spend ($): <span id="spendVal">500</span></label>
+  <input type="range" id="spend" min="0" max="10000" value="500" step="10">
+  <input type="number" id="spendNum" min="0" max="10000" value="500" step="10">
+</div>
+<div class="slider-container color2">
+  <label for="visitors">Visitors (Clicks): <span id="visitorsVal">1000</span></label>
   <input type="range" id="visitors" min="0" max="10000" value="1000" step="1">
   <input type="number" id="visitorsNum" min="0" max="10000" value="1000" step="1">
 </div>
-<div class="slider-container color2">
+<div class="slider-container color3">
   <label for="conversion">Conversion Rate (%): <span id="conversionVal">5</span></label>
   <input type="range" id="conversion" min="0" max="100" value="5">
   <input type="number" id="conversionNum" min="0" max="100" value="5">
 </div>
-<div class="slider-container color3">
+<div class="slider-container color4">
   <label for="price">Monthly Price ($): <span id="priceVal">5</span></label>
   <input type="range" id="price" min="0" max="100" value="5" step="1">
   <input type="number" id="priceNum" min="0" max="100" value="5" step="1">
 </div>
-<div class="slider-container color4">
+<div class="slider-container color5">
   <label for="retention">Retention (months): <span id="retentionVal">6</span></label>
   <input type="range" id="retention" min="1" max="24" value="6" step="1">
   <input type="number" id="retentionNum" min="1" max="24" value="6" step="1">
-</div>
-<div class="slider-container color5">
-  <label for="cpc">Cost per Visitor ($): <span id="cpcVal">0.50</span></label>
-  <input type="range" id="cpc" min="0" max="10" value="0.50" step="0.01">
-  <input type="number" id="cpcNum" min="0" max="10" value="0.50" step="0.01">
 </div>
 <div class="slider-container color6">
   <label for="margin">Profit Margin (%): <span id="marginVal">50</span></label>
@@ -120,9 +120,11 @@
     <tr><td>Paying Customers</td><td id="customersTab">50</td></tr>
     <tr><td>Monthly Recurring Revenue (MRR)</td><td id="mrrTab">$250.00</td></tr>
     <tr><td>Annual Recurring Revenue (ARR)</td><td id="arrTab">$3000.00</td></tr>
+    <tr><td>Advertising Spend (Monthly)</td><td id="spendTab">$500.00</td></tr>
+    <tr><td>Advertising Spend (Annual)</td><td id="annualSpendTab">$6000.00</td></tr>
     <tr><td>Payback Period (months)</td><td id="paybackTab">2.00</td></tr>
-    <tr><td>Advertising Spend</td><td id="spendTab">$500.00</td></tr>
-    <tr><td>Profit</td><td id="profitTab">$0.00</td></tr>
+    <tr><td>Profit (Monthly)</td><td id="profitTab">$0.00</td></tr>
+    <tr><td>Profit (Annual)</td><td id="annualProfitTab">$0.00</td></tr>
   </tbody>
 </table>
 
@@ -131,10 +133,12 @@
   <p><strong>Paying Customers:</strong> expected subscribers based on your traffic and conversion rate.</p>
   <p><strong>Monthly Recurring Revenue (MRR):</strong> predictable monthly revenue from those customers.</p>
   <p><strong>Annual Recurring Revenue (ARR):</strong> yearly subscription revenue calculated from MRR.</p>
-  <p><strong>Payback Period:</strong> months needed to recover your acquisition costs.</p>
+  <p><strong>Advertising Spend (Monthly):</strong> what you budget for ads each month.</p>
+  <p><strong>Advertising Spend (Annual):</strong> yearly ad spend assuming the monthly budget stays the same.</p>
+  <p><strong>Payback Period:</strong> months needed to recover your advertising spend.</p>
   <p><strong>Profit Margin:</strong> percent of revenue kept after non-advertising costs.</p>
-  <p><strong>Advertising Spend:</strong> total money spent on ads based on visitor volume and cost per visitor.</p>
-  <p><strong>Profit:</strong> revenue remaining after advertising spend and your chosen profit margin.</p>
+  <p><strong>Profit (Monthly):</strong> revenue remaining each month after ad spend and your chosen margin.</p>
+  <p><strong>Profit (Annual):</strong> yearly profit if monthly results continue.</p>
   </div>
 
 </div>
@@ -142,41 +146,45 @@
 
 <script>
 function update() {
+  const spend = parseFloat($('#spend').val());
   const visitors = parseInt($('#visitors').val());
   const conversion = parseFloat($('#conversion').val()) / 100;
   const price = parseFloat($('#price').val());
   const retention = parseInt($('#retention').val());
-  const cpc = parseFloat($('#cpc').val());
   const margin = parseFloat($('#margin').val());
 
+  $('#spendNum').val(spend);
   $('#visitorsNum').val(visitors);
   $('#conversionNum').val($('#conversion').val());
   $('#priceNum').val(price);
   $('#retentionNum').val(retention);
-  $('#cpcNum').val(cpc);
   $('#marginNum').val(margin);
 
+  $('#spendVal').text(spend.toFixed(2));
   $('#visitorsVal').text(visitors);
   $('#conversionVal').text((conversion * 100).toFixed(1));
   $('#priceVal').text(price.toFixed(2));
   $('#retentionVal').text(retention);
-  $('#cpcVal').text(cpc.toFixed(2));
   $('#marginVal').text(margin.toFixed(0));
 
   const customers = visitors * conversion;
   const mrr = customers * price;
   const arr = mrr * 12;
-  const acquisitionCost = visitors * cpc;
-  const profit = mrr * (margin / 100) - acquisitionCost;
-  const payback = mrr > 0 ? acquisitionCost / mrr : 0;
+  const adSpendMonthly = spend;
+  const adSpendAnnual = spend * 12;
+  const profitMonthly = mrr * (margin / 100) - adSpendMonthly;
+  const profitAnnual = profitMonthly * 12;
+  const payback = mrr > 0 ? adSpendMonthly / mrr : 0;
 
 
   $('#customersTab').text(customers.toFixed(0));
   $('#mrrTab').text(`$${mrr.toFixed(2)}`);
   $('#arrTab').text(`$${arr.toFixed(2)}`);
+  $('#spendTab').text(`$${adSpendMonthly.toFixed(2)}`);
+  $('#annualSpendTab').text(`$${adSpendAnnual.toFixed(2)}`);
   $('#paybackTab').text(payback.toFixed(2));
-  $('#spendTab').text(`$${acquisitionCost.toFixed(2)}`);
-  $('#profitTab').text(`$${profit.toFixed(2)}`);
+  $('#profitTab').text(`$${profitMonthly.toFixed(2)}`);
+  $('#annualProfitTab').text(`$${profitAnnual.toFixed(2)}`);
 }
 
 $(function() {
