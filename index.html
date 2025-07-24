@@ -9,7 +9,11 @@
   label { display: block; font-weight: bold; margin-bottom: 5px; }
   input[type=range] { width: 100%; }
   #results { margin-top: 30px; }
+  #resultsTable { margin-top: 30px; border-collapse: collapse; }
+  #resultsTable th, #resultsTable td { border: 1px solid #ccc; padding: 4px 8px; }
 </style>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 <h1>CRO Calculator</h1>
@@ -39,19 +43,33 @@
   <p>Annual Recurring Revenue (ARR): $<span id="arr">3000.00</span></p>
   <p>Payback Period: <span id="payback">2.00</span> months</p>
 </div>
-<script>
-function update() {
-  const visitors = parseInt(document.getElementById('visitors').value);
-  const conversion = parseFloat(document.getElementById('conversion').value) / 100;
-  const price = parseFloat(document.getElementById('price').value);
-  const retention = parseInt(document.getElementById('retention').value);
-  const cpc = parseFloat(document.getElementById('cpc').value);
+<table id="resultsTable">
+  <thead>
+    <tr><th>Metric</th><th>Value</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Paying Customers</td><td id="customersTab">50</td></tr>
+    <tr><td>MRR</td><td id="mrrTab">$250.00</td></tr>
+    <tr><td>ARR</td><td id="arrTab">$3000.00</td></tr>
+    <tr><td>Payback Period (months)</td><td id="paybackTab">2.00</td></tr>
+  </tbody>
+</table>
 
-  document.getElementById('visitorsVal').textContent = visitors;
-  document.getElementById('conversionVal').textContent = (conversion*100).toFixed(1);
-  document.getElementById('priceVal').textContent = price.toFixed(2);
-  document.getElementById('retentionVal').textContent = retention;
-  document.getElementById('cpcVal').textContent = cpc.toFixed(2);
+<canvas id="metricsChart" width="600" height="300"></canvas>
+<script>
+let chart;
+function update() {
+  const visitors = parseInt($('#visitors').val());
+  const conversion = parseFloat($('#conversion').val()) / 100;
+  const price = parseFloat($('#price').val());
+  const retention = parseInt($('#retention').val());
+  const cpc = parseFloat($('#cpc').val());
+
+  $('#visitorsVal').text(visitors);
+  $('#conversionVal').text((conversion * 100).toFixed(1));
+  $('#priceVal').text(price.toFixed(2));
+  $('#retentionVal').text(retention);
+  $('#cpcVal').text(cpc.toFixed(2));
 
   const customers = visitors * conversion;
   const mrr = customers * price;
@@ -59,17 +77,63 @@ function update() {
   const acquisitionCost = visitors * cpc;
   const payback = mrr > 0 ? acquisitionCost / mrr : 0;
 
-  document.getElementById('customers').textContent = customers.toFixed(0);
-  document.getElementById('mrr').textContent = mrr.toFixed(2);
-  document.getElementById('arr').textContent = arr.toFixed(2);
-  document.getElementById('payback').textContent = payback.toFixed(2);
+  $('#customers').text(customers.toFixed(0));
+  $('#mrr').text(mrr.toFixed(2));
+  $('#arr').text(arr.toFixed(2));
+  $('#payback').text(payback.toFixed(2));
+
+  $('#customersTab').text(customers.toFixed(0));
+  $('#mrrTab').text(`$${mrr.toFixed(2)}`);
+  $('#arrTab').text(`$${arr.toFixed(2)}`);
+  $('#paybackTab').text(payback.toFixed(2));
+
+  updateChart(visitors, conversion, price, cpc);
 }
 
-document.querySelectorAll('input[type=range]').forEach(e => {
-  e.addEventListener('input', update);
-});
+function updateChart(visitors, conversion, price, cpc) {
+  const steps = 10;
+  const step = visitors / steps;
+  const labels = [];
+  const mrrData = [];
+  const acquisitionData = [];
+  const paybackData = [];
+  for (let i = 0; i <= steps; i++) {
+    const v = step * i;
+    const customers = v * conversion;
+    const mrr = customers * price;
+    const acquisition = v * cpc;
+    const payback = mrr > 0 ? acquisition / mrr : 0;
+    labels.push(Math.round(v));
+    mrrData.push(mrr);
+    acquisitionData.push(acquisition);
+    paybackData.push(payback);
+  }
 
-update();
+  chart.data.labels = labels;
+  chart.data.datasets[0].data = mrrData;
+  chart.data.datasets[1].data = acquisitionData;
+  chart.data.datasets[2].data = paybackData;
+  chart.update();
+}
+
+$(function() {
+  const ctx = document.getElementById('metricsChart').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        { label: 'MRR', borderColor: 'blue', fill: false, data: [] },
+        { label: 'Acquisition Cost', borderColor: 'green', fill: false, data: [] },
+        { label: 'Payback Period', borderColor: 'red', fill: false, data: [] }
+      ]
+    },
+    options: { scales: { y: { beginAtZero: true } } }
+  });
+
+  $('input[type=range]').on('input', update);
+  update();
+});
 </script>
 </body>
 </html>
